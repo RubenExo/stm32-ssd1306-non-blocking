@@ -12,7 +12,7 @@ The code is based on
 [4ilo/ssd1306-stm32HAL](https://github.com/4ilo/ssd1306-stm32HAL) library
 developed by Olivier Van den Eede ( [@4ilo](https://github.com/4ilo) ) in 2016.
 
-# added DMA.
+## Added DMA.
 
 I added DMA options for both commands and the data transfer, but only the data transfers are set to use the non-blocking versions. 
 The OLED screen acts odd when the commands are set using DMA.
