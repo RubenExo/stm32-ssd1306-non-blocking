@@ -3,6 +3,10 @@
  * Some refactoring was done and SPI support was added by Aleksander Alekseev (afiskon) in 2018.
  *
  * https://github.com/afiskon/stm32-ssd1306
+ *
+ * This library was edited by Ruben Smith (Data Engineers ftw) in 2025
+ * - Added a way to send data in non blocking mode (DMA)
+ * - https://youtu.be/MUZj4YwKVac <- use this video to add this library to your project (1:37)
  */
 
 #ifndef __SSD1306_H__
@@ -16,11 +20,8 @@ _BEGIN_STD_C
 
 #include "ssd1306_conf.h"
 
-
 #if defined(STM32WB)
 #include "stm32wbxx_hal.h"
-#elif defined(STM32F0)
-#include "stm32f0xx_hal.h"
 #elif defined(STM32F1)
 #include "stm32f1xx_hal.h"
 #elif defined(STM32F4)
@@ -61,8 +62,12 @@ _BEGIN_STD_C
 
 /* vvv I2C config vvv */
 
+#ifndef SSD1306_I2C_DMA
+#define SSD1306_I2C_DMA			hdma_i2c2_tx
+#endif
+
 #ifndef SSD1306_I2C_PORT
-#define SSD1306_I2C_PORT        hi2c1
+#define SSD1306_I2C_PORT        hi2c2
 #endif
 
 #ifndef SSD1306_I2C_ADDR
@@ -102,6 +107,7 @@ _BEGIN_STD_C
 
 #if defined(SSD1306_USE_I2C)
 extern I2C_HandleTypeDef SSD1306_I2C_PORT;
+extern DMA_HandleTypeDef SSD1306_I2C_DMA;
 #elif defined(SSD1306_USE_SPI)
 extern SPI_HandleTypeDef SSD1306_SPI_PORT;
 #else
@@ -110,7 +116,7 @@ extern SPI_HandleTypeDef SSD1306_SPI_PORT;
 
 // SSD1306 OLED height in pixels
 #ifndef SSD1306_HEIGHT
-#define SSD1306_HEIGHT          64
+#define SSD1306_HEIGHT          32
 #endif
 
 // SSD1306 width in pixels
@@ -207,6 +213,7 @@ uint8_t ssd1306_GetDisplayOn();
 
 // Low-level procedures
 void ssd1306_Reset(void);
+void ssd1306_Error_Handler(void);
 void ssd1306_WriteCommand(uint8_t byte);
 void ssd1306_WriteData(uint8_t* buffer, size_t buff_size);
 SSD1306_Error_t ssd1306_FillBuffer(uint8_t* buf, uint32_t len);
