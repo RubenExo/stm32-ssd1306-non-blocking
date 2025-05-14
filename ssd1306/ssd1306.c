@@ -5,18 +5,44 @@
 
 #if defined(SSD1306_USE_I2C)
 
+#define MAX_DMA_WAIT 500
+
+// Turn this off if you are using this pin for anything else
+void ssd1306_Error_Handler(void) {
+	uint8_t led = 1;
+	if (led) HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+}
+
 void ssd1306_Reset(void) {
     /* for I2C - do nothing */
 }
 
-// Send a byte to the command register
-void ssd1306_WriteCommand(uint8_t byte) {
-    HAL_I2C_Mem_Write(&SSD1306_I2C_PORT, SSD1306_I2C_ADDR, 0x00, 1, &byte, 1, HAL_MAX_DELAY);
+// Send a byte to the command register (Blocking)
+void ssd1306_WriteCommand(uint8_t byte){
+	HAL_I2C_Mem_Write(&SSD1306_I2C_PORT, SSD1306_I2C_ADDR, 0x00, 1, &byte, 1, MAX_DMA_WAIT);
 }
 
-// Send data
+// Send a byte to the command register (non blocking/ DMA)
+void ssd1306_WriteCommand_Non_Blocking(uint8_t byte) {
+    while (HAL_I2C_GetState(&SSD1306_I2C_PORT) != HAL_I2C_STATE_READY){}
+
+    while(HAL_I2C_Mem_Write_DMA(&SSD1306_I2C_PORT, SSD1306_I2C_ADDR, 0x00, 1, &byte, 1) != HAL_OK){
+    	if (HAL_I2C_GetError(&SSD1306_I2C_PORT) != HAL_I2C_ERROR_AF) ssd1306_Error_Handler();
+    }
+}
+
+//send data in blocking mode
+void ssd1306_WriteData_Blocking(uint8_t* buffer, size_t buff_size){
+	HAL_I2C_Mem_Write(&SSD1306_I2C_PORT, SSD1306_I2C_ADDR, 0x40, 1, buffer, buff_size, MAX_DMA_WAIT);
+}
+
+// Send data in non blocking mode (DMA)
 void ssd1306_WriteData(uint8_t* buffer, size_t buff_size) {
-    HAL_I2C_Mem_Write(&SSD1306_I2C_PORT, SSD1306_I2C_ADDR, 0x40, 1, buffer, buff_size, HAL_MAX_DELAY);
+	while (HAL_I2C_GetState(&SSD1306_I2C_PORT) != HAL_I2C_STATE_READY){}
+
+    while(HAL_I2C_Mem_Write_DMA(&SSD1306_I2C_PORT, SSD1306_I2C_ADDR, 0x40, 1, buffer, buff_size) != HAL_OK){
+    	if (HAL_I2C_GetError(&SSD1306_I2C_PORT) != HAL_I2C_ERROR_AF) ssd1306_Error_Handler();
+    }
 }
 
 #elif defined(SSD1306_USE_SPI)
@@ -591,3 +617,5 @@ void ssd1306_SetDisplayOn(const uint8_t on) {
 uint8_t ssd1306_GetDisplayOn() {
     return SSD1306.DisplayOn;
 }
+
+
