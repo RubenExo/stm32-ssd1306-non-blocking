@@ -12,6 +12,12 @@ The code is based on
 [4ilo/ssd1306-stm32HAL](https://github.com/4ilo/ssd1306-stm32HAL) library
 developed by Olivier Van den Eede ( [@4ilo](https://github.com/4ilo) ) in 2016.
 
+# added DMA.
+
+I added DMA options for both commands and the data transfer, but only the data transfers are set to use the non-blocking versions. 
+The OLED screen acts odd when the commands are set using DMA.
+Edited by Ruben Smith (27295451)
+
 ## Ports
 
 There is a [DuyTrandeLion/nrf52-ssd1309](https://github.com/DuyTrandeLion/nrf52-ssd1309) port to nRF52 of this library made by [@DuyTrandeLion](https://github.com/DuyTrandeLion) in 2020.
